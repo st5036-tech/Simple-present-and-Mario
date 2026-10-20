@@ -1,0 +1,1703 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Super English World - Simple Present Adventure</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --mario-blue: #5c94fc;
+            --mario-sky: #5c94fc;
+            --mario-green: #00a800;
+            --mario-yellow: #f8d800;
+            --mario-red: #e52521;
+            --mario-brick: #c84c0c;
+            --mario-dark: #000000;
+            --mario-pipe: #00a800;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #050508;
+            color: #ffffff;
+            font-family: 'Press Start 2P', 'Outfit', monospace;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            max-width: 900px;
+            max-height: 520px;
+            background: var(--mario-sky);
+            border: 6px solid #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 0 6px #000, 0 20px 50px rgba(0,0,0,0.8);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            image-rendering: pixelated;
+        }
+
+        .pixel-text {
+            font-family: 'Press Start 2P', cursive;
+            text-shadow: 2px 2px 0px #000;
+        }
+
+        /* Screens */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            z-index: 10;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        /* START SCREEN - NES CLASSIC STYLE */
+        #start-screen {
+            background: var(--mario-sky);
+            align-items: center;
+            justify-content: space-between;
+            padding: 25px 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        /* Decorative background elements for start screen matching image */
+        .start-bg-scene {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .title-box {
+            position: relative;
+            z-index: 2;
+            background: #d05018;
+            padding: 20px 30px;
+            border: 4px solid #000;
+            box-shadow: 6px 6px 0px #000, inset -4px -4px 0px #802000, inset 4px 4px 0px #ff8844;
+            max-width: 550px;
+            margin-top: 10px;
+        }
+
+        .main-title {
+            color: #f8d8f8;
+            font-size: 1.8rem;
+            line-height: 1.3;
+            letter-spacing: 2px;
+            text-shadow: 3px 3px 0 #000, -2px -2px 0 #800000;
+        }
+
+        .subtitle {
+            color: #f8d800;
+            font-size: 0.75rem;
+            margin-top: 10px;
+            letter-spacing: 1px;
+            text-shadow: 2px 2px 0 #000;
+        }
+
+        .menu-buttons {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+            max-width: 340px;
+            margin-bottom: 25px;
+        }
+
+        .btn {
+            background: #fc9838;
+            color: #fff;
+            border: 3px solid #000;
+            padding: 12px 18px;
+            font-size: 0.75rem;
+            font-family: 'Press Start 2P', cursive;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            text-transform: uppercase;
+            box-shadow: 4px 4px 0px #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px #000;
+            filter: brightness(1.1);
+        }
+
+        .btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 0px #000;
+        }
+
+        .btn-green { background: #00a800; }
+        .btn-red { background: #e52521; }
+        .btn-blue { background: #2080f0; }
+
+        /* HUD TOP BAR */
+        #hud {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 20;
+            background: rgba(0, 0, 0, 0.4);
+            font-size: 0.7rem;
+            color: #fff;
+            font-family: 'Press Start 2P', cursive;
+            box-sizing: border-box;
+            border-bottom: 2px solid #000;
+        }
+
+        .hud-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .hud-label {
+            color: #f8f8f8;
+            font-size: 0.6rem;
+        }
+
+        /* WORLD MAP SCREEN */
+        #map-screen {
+            background: #5c94fc;
+            padding: 60px 20px 20px 20px;
+            align-items: center;
+        }
+
+        .map-title {
+            color: #f8d800;
+            margin-bottom: 20px;
+            font-size: 1rem;
+            text-align: center;
+            text-shadow: 3px 3px 0 #000;
+        }
+
+        .worlds-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            width: 100%;
+            max-width: 800px;
+            flex: 1;
+            align-content: center;
+        }
+
+        .world-card {
+            background: #000000;
+            border: 3px solid #fff;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            cursor: pointer;
+            box-shadow: 4px 4px 0px #000;
+        }
+
+        .world-card:not(.locked):hover {
+            transform: scale(1.03);
+            border-color: var(--mario-yellow);
+        }
+
+        .world-card.locked {
+            opacity: 0.5;
+            filter: grayscale(1);
+            cursor: not-allowed;
+        }
+
+        .world-num {
+            color: var(--mario-yellow);
+            font-size: 0.65rem;
+            margin-bottom: 8px;
+        }
+
+        .world-name {
+            font-size: 0.65rem;
+            line-height: 1.4;
+            margin-bottom: 10px;
+            min-height: 32px;
+            display: flex;
+            align-items: center;
+            color: #fff;
+        }
+
+        .world-stars {
+            color: var(--mario-yellow);
+            font-size: 0.75rem;
+            margin-top: auto;
+        }
+
+        .lock-icon {
+            font-size: 1.5rem;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* CANVAS & GAMEPLAY */
+        #canvas-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: var(--mario-sky);
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            image-rendering: pixelated;
+        }
+
+        /* QUESTION MODAL NES STYLE */
+        #question-modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 50;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+        }
+
+        .modal-box {
+            background: #000000;
+            border: 4px solid #ffffff;
+            padding: 20px;
+            width: 100%;
+            max-width: 650px;
+            box-shadow: 8px 8px 0px #e52521;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .q-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #fc9838;
+            padding-bottom: 8px;
+            font-family: 'Press Start 2P', cursive;
+        }
+
+        .q-topic {
+            color: var(--mario-yellow);
+            font-size: 0.65rem;
+        }
+
+        .q-text {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #fff;
+            line-height: 1.4;
+            margin: 8px 0;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .option-btn {
+            background: #202028;
+            border: 2px solid #fff;
+            color: #fff;
+            padding: 12px;
+            font-size: 0.9rem;
+            font-family: 'Outfit', sans-serif;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.1s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .option-btn:hover {
+            border-color: var(--mario-yellow);
+            background: #383848;
+        }
+
+        /* Order Words Container */
+        .word-pool, .word-target {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            min-height: 48px;
+            padding: 10px;
+            background: #101018;
+            border: 2px dashed #666;
+        }
+
+        .word-target {
+            border-style: solid;
+            border-color: #fc9838;
+            background: #181828;
+        }
+
+        .word-chip {
+            background: #fc9838;
+            color: #000;
+            padding: 6px 12px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border: 2px solid #000;
+            box-shadow: 2px 2px 0 #000;
+        }
+
+        /* Feedback Area */
+        .feedback-box {
+            padding: 10px;
+            font-size: 0.85rem;
+            display: none;
+            line-height: 1.4;
+            border: 2px solid #fff;
+        }
+
+        .feedback-box.correct {
+            display: block;
+            background: #006800;
+            color: #fff;
+        }
+
+        .feedback-box.incorrect {
+            display: block;
+            background: #a81000;
+            color: #fff;
+        }
+
+        /* TOUCH CONTROLS OVERLAY */
+        #touch-controls {
+            position: absolute;
+            bottom: 15px;
+            left: 0;
+            width: 100%;
+            padding: 0 20px;
+            display: none;
+            justify-content: space-between;
+            align-items: flex-end;
+            z-index: 30;
+            pointer-events: none;
+        }
+
+        .d-pad, .action-pad {
+            display: flex;
+            gap: 10px;
+            pointer-events: auto;
+        }
+
+        .touch-btn {
+            width: 50px;
+            height: 50px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            color: #fff;
+            touch-action: manipulation;
+            font-family: 'Press Start 2P', cursive;
+        }
+
+        .touch-btn:active {
+            background: rgba(252, 152, 56, 0.8);
+        }
+
+        .touch-btn-wide {
+            width: 70px;
+            background: rgba(229, 37, 33, 0.8);
+        }
+
+        /* INSTRUCTIONS & RESULTS SCREEN */
+        .modal-screen {
+            background: rgba(0, 0, 0, 0.9);
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .content-card {
+            background: #000;
+            border: 4px solid #fff;
+            padding: 25px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 6px 6px 0px #fc9838;
+        }
+
+        .content-card h2 {
+            color: var(--mario-yellow);
+            margin-bottom: 15px;
+            font-size: 1rem;
+            text-align: center;
+        }
+
+        .content-card p, .content-card li {
+            font-size: 0.85rem;
+            color: #ddd;
+            line-height: 1.6;
+            margin-bottom: 10px;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .content-card ul {
+            padding-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .results-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-box {
+            background: #202028;
+            border: 2px solid #fff;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.2rem;
+            color: var(--mario-yellow);
+            font-weight: bold;
+            margin-top: 5px;
+            font-family: 'Press Start 2P', cursive;
+        }
+
+        /* RESPONSIVE DESIGN */
+        @media (max-width: 768px) {
+            .main-title { font-size: 1.2rem; }
+            .worlds-grid { grid-template-columns: 1fr 1fr; }
+            .options-grid { grid-template-columns: 1fr; }
+            #touch-controls { display: flex; }
+            .modal-box { padding: 12px; }
+            .q-text { font-size: 0.95rem; }
+        }
+
+        @media (max-width: 480px) {
+            .worlds-grid { grid-template-columns: 1fr; }
+            .hud-label { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+
+        <!-- TOP HUD BAR - CLASSIC MARIO BROS LOOK -->
+        <div id="hud" style="display: none;">
+            <div class="hud-item">
+                <span class="hud-label">ENGLISH</span>
+                <span id="hud-score" class="hud-val">000000</span>
+            </div>
+            <div class="hud-item">
+                <span class="hud-label">COINS</span>
+                <span id="hud-coins" class="hud-val">🪙x00</span>
+            </div>
+            <div class="hud-item">
+                <span class="hud-label">WORLD</span>
+                <span id="hud-world" class="hud-val">1-1</span>
+            </div>
+            <div class="hud-item">
+                <span class="hud-label">LIVES</span>
+                <span id="hud-lives" class="hud-val">❤️x3</span>
+            </div>
+        </div>
+
+        <!-- SCREEN 1: START / MAIN MENU MATCHING IMAGE -->
+        <div id="start-screen" class="screen active">
+            
+            <!-- Start Title Box Banner -->
+            <div class="title-box">
+                <h1 class="main-title pixel-text">SUPER<br>ENGLISH BROS.</h1>
+                <p class="subtitle pixel-text">SIMPLE PRESENT ADVENTURE</p>
+            </div>
+
+            <div class="menu-buttons">
+                <button class="btn btn-green" onclick="showScreen('map-screen')">🎮 PLAY GAME</button>
+                <button class="btn btn-blue" onclick="showScreen('instructions-screen')">📖 INSTRUCTIONS</button>
+                <button class="btn btn-red" onclick="resetProgress()">🔄 RESET DATA</button>
+            </div>
+        </div>
+
+        <!-- SCREEN 1: START / MAIN MENU -->
+        <div id="start-screen" class="screen active">
+            <div class="title-box">
+                <h1 class="main-title pixel-text">SUPER ENGLISH<br>WORLD</h1>
+                <p class="subtitle pixel-text">SIMPLE PRESENT ADVENTURE</p>
+            </div>
+
+            <div style="font-size: 4rem; animation: bounce 1s infinite alternate;">
+                🏃‍♂️💨 ❓
+            </div>
+
+            <div class="menu-buttons">
+                <button class="btn btn-green pixel-text" onclick="showScreen('map-screen')">🎮 JUGAR</button>
+                <button class="btn btn-blue pixel-text" onclick="showScreen('instructions-screen')">📖 INSTRUCCIONES</button>
+                <button class="btn btn-red pixel-text" onclick="resetProgress()">🔄 REINICIAR</button>
+            </div>
+        </div>
+
+        <!-- SCREEN 2: WORLD MAP SELECTOR -->
+        <div id="map-screen" class="screen">
+            <h2 class="map-title pixel-text">SELECCIONA UN MUNDO</h2>
+            
+            <div class="worlds-grid" id="worlds-container">
+                <!-- Dynamically populated via JS -->
+            </div>
+
+            <button class="btn btn-blue pixel-text" style="margin-top: 15px; width: 200px;" onclick="showScreen('start-screen')">⬅ VOLVER</button>
+        </div>
+
+        <!-- SCREEN 3: GAME CANVAS AREA -->
+        <div id="game-screen" class="screen">
+            <div id="canvas-container">
+                <canvas id="gameCanvas"></canvas>
+                
+                <!-- Touch controls overlay -->
+                <div id="touch-controls">
+                    <div class="d-pad">
+                        <div class="touch-btn" id="btn-left">◀</div>
+                        <div class="touch-btn" id="btn-right">▶</div>
+                    </div>
+                    <div class="action-pad">
+                        <div class="touch-btn touch-btn-wide" id="btn-jump">JUMP</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCREEN 4: INSTRUCTIONS SCREEN -->
+        <div id="instructions-screen" class="screen modal-screen">
+            <div class="content-card">
+                <h2 class="pixel-text">CÓMO JUGAR</h2>
+                <p><strong>Super English World</strong> es una aventura de plataformas donde aprenderás y practicarás el <strong>Simple Present</strong> en inglés.</p>
+                
+                <h3 style="color: var(--mario-yellow); margin-top: 15px;">🎮 Controles:</h3>
+                <ul>
+                    <li><strong>Teclado:</strong> Flechas (Izquierda / Derecha) o A / D para moverte. Flecha Arriba, W o Espacio para Saltar.</li>
+                    <li><strong>Móvil / Tablet:</strong> Usa los botones táctiles en pantalla.</li>
+                </ul>
+
+                <h3 style="color: var(--mario-yellow); margin-top: 15px;">📚 Mecánica de Juego:</h3>
+                <ul>
+                    <li>Avanza por el nivel y salta sobre las plataformas.</li>
+                    <li>Golpea los <strong>Bloques Misteriosos (?)</strong> con la cabeza para activar un desafío gramatical.</li>
+                    <li>Responde correctamente para ganar **Monedas, Estrellas y Puntos**.</li>
+                    <li>Evita o salta sobre los enemigos (Goombas). Si te tocan sin responder bien, perderás una vida.</li>
+                    <li>Llega a la <strong>Tubería Verde de Meta</strong> para completar el nivel.</li>
+                </ul>
+
+                <button class="btn btn-green pixel-text" style="width: 100%; margin-top: 20px;" onclick="showScreen('start-screen')">¡ENTENDIDO!</button>
+            </div>
+        </div>
+
+        <!-- SCREEN 5: RESULTS / WORLD CLEAR -->
+        <div id="results-screen" class="screen modal-screen">
+            <div class="content-card" style="text-align: center;">
+                <h2 class="pixel-text" style="color: #00c853;">¡NIVEL COMPLETADO!</h2>
+                <p id="results-world-name" class="pixel-text" style="font-size: 0.8rem; color: var(--mario-yellow);"></p>
+
+                <div style="font-size: 3rem; margin: 15px 0;" id="results-stars">⭐⭐⭐</div>
+
+                <div class="results-stats">
+                    <div class="stat-box">
+                        <div style="font-size: 0.8rem; color: #aaa;">MONEDAS</div>
+                        <div class="stat-value" id="res-coins">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div style="font-size: 0.8rem; color: #aaa;">PUNTOS</div>
+                        <div class="stat-value" id="res-score">0000</div>
+                    </div>
+                </div>
+
+                <div class="menu-buttons" style="margin: 0 auto;">
+                    <button class="btn btn-green pixel-text" onclick="showScreen('map-screen')">SIGUIENTE MUNDO</button>
+                    <button class="btn btn-blue pixel-text" onclick="restartCurrentLevel()">REPETIR NIVEL</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- INTERACTIVE QUESTION MODAL OVERLAY -->
+        <div id="question-modal">
+            <div class="modal-box">
+                <div class="q-header">
+                    <span class="q-topic pixel-text" id="q-topic-tag">SIMPLE PRESENT</span>
+                    <span class="pixel-text" style="color: var(--mario-yellow);" id="q-reward-tag">+100 PTS</span>
+                </div>
+
+                <div class="q-text" id="q-text-content">
+                    Loading question...
+                </div>
+
+                <!-- Dynamic container for multiple choice or word ordering -->
+                <div id="q-input-container">
+                    <!-- Javascript populates options or drag/drop word blocks -->
+                </div>
+
+                <!-- Instant Educational Feedback -->
+                <div id="q-feedback" class="feedback-box"></div>
+
+                <button id="btn-submit-q" class="btn btn-green pixel-text" style="width: 100%; display: none;">COMPROBAR RESPUESTA</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        /* ==========================================================================
+           SUPER ENGLISH WORLD - GAME ENGINE & GRAMMAR SYSTEM
+           ========================================================================== */
+
+        // --- GAME DATABASE & QUESTIONS FOR SIMPLE PRESENT ---
+        const WORLDS_DATA = [
+            {
+                id: 1,
+                title: "Affirmative Sentences",
+                subtitle: "Oraciones Afirmativas",
+                color: "#4CAF50",
+                questions: [
+                    {
+                        type: "choice",
+                        question: "Completa la oración: 'She ___ to school every morning.'",
+                        options: ["walk", "walks", "is walk", "walking"],
+                        correct: 1,
+                        explanation: "¡Correcto! En el Present Simple, con He/She/It agregamos '-s' o '-es' al verbo."
+                    },
+                    {
+                        type: "choice",
+                        question: "Elige la opción correcta: 'They ___ video games on weekends.'",
+                        options: ["plays", "play", "playing", "played"],
+                        correct: 1,
+                        explanation: "¡Muy bien! Con I/You/We/They el verbo se mantiene en su forma base."
+                    },
+                    {
+                        type: "order",
+                        question: "Ordena la oración afirmativa:",
+                        words: ["cat", "The", "drinks", "milk"],
+                        correctOrder: ["The", "cat", "drinks", "milk"],
+                        explanation: "Estructura correcta: Sujeto (The cat) + Verbo con -s (drinks) + Complemento (milk)."
+                    }
+                ]
+            },
+            {
+                id: 2,
+                title: "Negatives (Don't / Doesn't)",
+                subtitle: "Oraciones Negativas",
+                color: "#2196F3",
+                questions: [
+                    {
+                        type: "choice",
+                        question: "Completa: 'He ___ like spicy food.'",
+                        options: ["don't", "doesn't", "not", "isn't"],
+                        correct: 1,
+                        explanation: "¡Excelente! Usamos 'doesn't' para He, She, It en oraciones negativas."
+                    },
+                    {
+                        type: "choice",
+                        question: "Completa: 'We ___ have a car.'",
+                        options: ["doesn't", "don't", "not have", "aren't"],
+                        correct: 1,
+                        explanation: "¡Bien hecho! Usamos 'don't' con I, You, We, They."
+                    },
+                    {
+                        type: "choice",
+                        question: "Encuentra el error: 'She doesn't likes coffee.'",
+                        options: ["Cambiar 'doesn't' por 'don't'", "Cambiar 'likes' por 'like'", "La oración está bien", "Quitar 'coffee'"],
+                        correct: 1,
+                        explanation: "¡Exacto! Después de 'doesn't', el verbo regresa a su forma base sin '-s' (like)."
+                    }
+                ]
+            },
+            {
+                id: 3,
+                title: "Questions (Do / Does)",
+                subtitle: "Preguntas y Respuestas",
+                color: "#FF9800",
+                questions: [
+                    {
+                        type: "choice",
+                        question: "Completa la pregunta: '___ you live in London?'",
+                        options: ["Does", "Do", "Are", "Is"],
+                        correct: 1,
+                        explanation: "¡Correcto! Las preguntas con 'You' comienzan con el auxiliar 'Do'."
+                    },
+                    {
+                        type: "choice",
+                        question: "Completa: '___ Peter play guitar?'",
+                        options: ["Do", "Is", "Does", "Has"],
+                        correct: 2,
+                        explanation: "¡Así es! Usamos 'Does' para preguntas con He/She/It (Peter)."
+                    },
+                    {
+                        type: "order",
+                        question: "Ordena la pregunta correctamente:",
+                        words: ["Do", "soccer?", "play", "they"],
+                        correctOrder: ["Do", "they", "play", "soccer?"],
+                        explanation: "Estructura de pregunta: Auxiliar (Do) + Sujeto (they) + Verbo (play) + Complemento."
+                    }
+                ]
+            },
+            {
+                id: 4,
+                title: "Daily Routines",
+                subtitle: "Rutinas Diarias",
+                color: "#9C27B0",
+                questions: [
+                    {
+                        type: "choice",
+                        question: "Sustituye la rutina: 'I ___ up at 7:00 AM every day.'",
+                        options: ["wake", "wakes", "waking", "waked"],
+                        correct: 0,
+                        explanation: "¡Perfecto! Para la primera persona ('I') usamos la forma base 'wake'."
+                    },
+                    {
+                        type: "choice",
+                        question: "'My brother ___ his teeth after breakfast.'",
+                        options: ["brush", "brushs", "brushes", "brushing"],
+                        correct: 2,
+                        explanation: "¡Correcto! Los verbos terminados en -sh agregan '-es' para la tercera persona (brushes)."
+                    }
+                ]
+            },
+            {
+                id: 5,
+                title: "Third Person Rules",
+                subtitle: "Reglas de la 3ª Persona",
+                color: "#E91E63",
+                questions: [
+                    {
+                        type: "choice",
+                        question: "¿Cuál es la forma correcta del verbo 'STUDY' para 'She'?",
+                        options: ["studys", "studies", "studyed", "studyes"],
+                        correct: 1,
+                        explanation: "¡Bien visto! Si el verbo termina en consonante + Y, se cambia la Y por '-ies' (studies)."
+                    },
+                    {
+                        type: "choice",
+                        question: "¿Cuál es la tercera persona del verbo 'HAVE'?",
+                        options: ["haves", "havies", "has", "is have"],
+                        correct: 2,
+                        explanation: "¡Excelente! 'Have' es un verbo irregular y cambia a 'has' para He/She/It."
+                    }
+                ]
+            },
+            {
+                id: 6,
+                title: "Master Challenge",
+                subtitle: "Desafío Final Combinado",
+                color: "#F44336",
+                questions: [
+                    {
+                        type: "choice",
+                        question: "Elige la oración totalmente CORRECTA:",
+                        options: [
+                            "He don't plays football.",
+                            "She plays the piano very well.",
+                            "Do she live here?",
+                            "They doesn't watch TV."
+                        ],
+                        correct: 1,
+                        explanation: "¡Fantástico! 'She plays the piano very well' cumple todas las reglas gramaticales."
+                    },
+                    {
+                        type: "order",
+                        question: "Construye la oración negativa:",
+                        words: ["work", "Sarah", "doesn't", "Sundays.", "on"],
+                        correctOrder: ["Sarah", "doesn't", "work", "on", "Sundays."],
+                        explanation: "¡Impresionante! Has dominado el Simple Present en Super English World."
+                    }
+                ]
+            }
+        ];
+
+        // --- GLOBAL GAME STATE ---
+        let gameState = {
+            coins: 0,
+            score: 0,
+            lives: 3,
+            currentWorld: 1,
+            unlockedWorlds: 1,
+            stars: {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0}
+        };
+
+        // Load saved state from LocalStorage
+        function loadSaveData() {
+            const saved = localStorage.getItem('super_english_world_save');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    gameState = { ...gameState, ...parsed };
+                } catch(e) {
+                    console.error("Error loading save data", e);
+                }
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('super_english_world_save', JSON.stringify(gameState));
+        }
+
+        function resetProgress() {
+            if(confirm("¿Seguro que deseas reiniciar todo tu progreso y estrellas?")) {
+                localStorage.removeItem('super_english_world_save');
+                gameState = {
+                    coins: 0,
+                    score: 0,
+                    lives: 3,
+                    currentWorld: 1,
+                    unlockedWorlds: 1,
+                    stars: {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0}
+                };
+                renderWorldMap();
+                updateHUD();
+                alert("¡Progreso reiniciado correctamente!");
+            }
+        }
+
+        // --- AUDIO SYNTHESIZER (Web Audio API - No external files needed) ---
+        class SoundFX {
+            constructor() {
+                this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+
+            playTone(freq, type, duration) {
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = type;
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + duration);
+            }
+
+            jump() {
+                this.playTone(400, 'sine', 0.15);
+            }
+
+            coin() {
+                this.playTone(987.77, 'sine', 0.08);
+                setTimeout(() => this.playTone(1318.51, 'sine', 0.25), 80);
+            }
+
+            correct() {
+                this.playTone(523.25, 'triangle', 0.1);
+                setTimeout(() => this.playTone(659.25, 'triangle', 0.1), 100);
+                setTimeout(() => this.playTone(783.99, 'triangle', 0.2), 200);
+            }
+
+            wrong() {
+                this.playTone(200, 'sawtooth', 0.2);
+                setTimeout(() => this.playTone(150, 'sawtooth', 0.3), 150);
+            }
+
+            powerup() {
+                this.playTone(300, 'square', 0.1);
+                setTimeout(() => this.playTone(400, 'square', 0.1), 100);
+                setTimeout(() => this.playTone(500, 'square', 0.2), 200);
+            }
+        }
+
+        const sfx = new SoundFX();
+
+        // --- NAVIGATION & UI MANAGEMENT ---
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+
+            const hud = document.getElementById('hud');
+            if (screenId === 'game-screen') {
+                hud.style.display = 'flex';
+                initGameLevel(gameState.currentWorld);
+            } else {
+                hud.style.display = 'none';
+                stopGameLoop();
+            }
+
+            if (screenId === 'map-screen') {
+                renderWorldMap();
+            }
+        }
+
+        function updateHUD() {
+            document.getElementById('hud-world').innerText = `${gameState.currentWorld}-1`;
+            document.getElementById('hud-coins').innerText = `🪙 ${gameState.coins}`;
+            document.getElementById('hud-lives').innerText = `❤️ ${gameState.lives}`;
+            document.getElementById('hud-score').innerText = String(gameState.score).padStart(5, '0');
+        }
+
+        function renderWorldMap() {
+            const container = document.getElementById('worlds-container');
+            container.innerHTML = '';
+
+            WORLDS_DATA.forEach(world => {
+                const isLocked = world.id > gameState.unlockedWorlds;
+                const starsCount = gameState.stars[world.id] || 0;
+                const starsStr = '⭐'.repeat(starsCount) + '☆'.repeat(3 - starsCount);
+
+                const card = document.createElement('div');
+                card.className = `world-card ${isLocked ? 'locked' : ''}`;
+                card.style.borderColor = isLocked ? '#555' : world.color;
+
+                card.innerHTML = `
+                    <div class="world-num pixel-text">MUNDO ${world.id}</div>
+                    <div class="world-name">${world.title}</div>
+                    <div style="font-size: 0.75rem; color: #aaa; margin-bottom: 8px;">${world.subtitle}</div>
+                    <div class="world-stars">${isLocked ? '' : starsStr}</div>
+                    ${isLocked ? '<div class="lock-icon">🔒</div>' : ''}
+                `;
+
+                if (!isLocked) {
+                    card.onclick = () => {
+                        gameState.currentWorld = world.id;
+                        showScreen('game-screen');
+                    };
+                }
+
+                container.appendChild(card);
+            });
+        }
+
+        // --- 2D PLATFORMER ENGINE & CANVAS LOGIC ---
+        let canvas = document.getElementById('gameCanvas');
+        let ctx = canvas.getContext('2d');
+        let animationFrameId = null;
+
+        // Level Entities
+        let player = {};
+        let platforms = [];
+        let questionBlocks = [];
+        let coinsList = [];
+        let enemies = [];
+        let finishPipe = {};
+        let cameraX = 0;
+        let keys = {};
+        let activeQuestionIndex = 0;
+        let levelQuestions = [];
+        let questionsAnsweredInLevel = 0;
+
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+
+        function initGameLevel(worldId) {
+            resizeCanvas();
+            const worldData = WORLDS_DATA.find(w => w.id === worldId);
+            levelQuestions = [...worldData.questions];
+            questionsAnsweredInLevel = 0;
+
+            // Player Setup
+            player = {
+                x: 50,
+                y: canvas.height - 150,
+                width: 32,
+                height: 44,
+                vx: 0,
+                vy: 0,
+                speed: 4.5,
+                jumpPower: -11.5,
+                gravity: 0.55,
+                grounded: false,
+                facing: 'right',
+                invulnerable: 0
+            };
+
+            cameraX = 0;
+
+            // Build Level Map
+            platforms = [
+                // Ground segments with gaps
+                { x: 0, y: canvas.height - 40, w: 900, h: 40 },
+                { x: 1000, y: canvas.height - 40, w: 1000, h: 40 },
+                { x: 2100, y: canvas.height - 40, w: 800, h: 40 },
+
+                // Floating Platforms
+                { x: 250, y: canvas.height - 140, w: 140, h: 20 },
+                { x: 500, y: canvas.height - 200, w: 180, h: 20 },
+                { x: 800, y: canvas.height - 150, w: 120, h: 20 },
+                { x: 1200, y: canvas.height - 180, w: 200, h: 20 },
+                { x: 1600, y: canvas.height - 140, w: 150, h: 20 }
+            ];
+
+            // Question Blocks (?) containing grammar quizzes
+            questionBlocks = [
+                { x: 300, y: canvas.height - 240, w: 36, h: 36, hit: false, questionIdx: 0 },
+                { x: 600, y: canvas.height - 300, w: 36, h: 36, hit: false, questionIdx: 1 % levelQuestions.length },
+                { x: 1300, y: canvas.height - 280, w: 36, h: 36, hit: false, questionIdx: 2 % levelQuestions.length }
+            ];
+
+            // Coins
+            coinsList = [
+                { x: 200, y: canvas.height - 100, collected: false },
+                { x: 230, y: canvas.height - 100, collected: false },
+                { x: 520, y: canvas.height - 250, collected: false },
+                { x: 550, y: canvas.height - 250, collected: false },
+                { x: 1250, y: canvas.height - 230, collected: false },
+                { x: 1650, y: canvas.height - 180, collected: false }
+            ];
+
+            // Enemies (Goombas)
+            enemies = [
+                { x: 450, y: canvas.height - 70, w: 30, h: 30, vx: -1.2, minX: 400, maxX: 700, alive: true },
+                { x: 1150, y: canvas.height - 70, w: 30, h: 30, vx: -1.5, minX: 1050, maxX: 1400, alive: true },
+                { x: 1700, y: canvas.height - 70, w: 30, h: 30, vx: -1.8, minX: 1600, maxX: 1900, alive: true }
+            ];
+
+            // End Level Pipe
+            finishPipe = { x: 2600, y: canvas.height - 110, w: 60, h: 70 };
+
+            updateHUD();
+            startGameLoop();
+        }
+
+        function startGameLoop() {
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            gameLoop();
+        }
+
+        function stopGameLoop() {
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+        }
+
+        function gameLoop() {
+            updatePhysics();
+            renderCanvas();
+            animationFrameId = requestAnimationFrame(gameLoop);
+        }
+
+        function updatePhysics() {
+            // Player Movement Controls
+            if (keys['ArrowRight'] || keys['KeyD']) {
+                player.vx = player.speed;
+                player.facing = 'right';
+            } else if (keys['ArrowLeft'] || keys['KeyA']) {
+                player.vx = -player.speed;
+                player.facing = 'left';
+            } else {
+                player.vx *= 0.8; // Friction
+            }
+
+            if ((keys['ArrowUp'] || keys['KeyW'] || keys['Space']) && player.grounded) {
+                player.vy = player.jumpPower;
+                player.grounded = false;
+                sfx.jump();
+            }
+
+            // Apply Gravity
+            player.vy += player.gravity;
+
+            // Move Player Horizontally
+            player.x += player.vx;
+
+            // Horizontal Collisions with Platforms
+            platforms.forEach(plat => {
+                if (checkCollision(player, plat)) {
+                    if (player.vx > 0) player.x = plat.x - player.width;
+                    else if (player.vx < 0) player.x = plat.x + plat.w;
+                }
+            });
+
+            // Move Player Vertically
+            player.y += player.vy;
+            player.grounded = false;
+
+            // Vertical Collisions with Platforms
+            platforms.forEach(plat => {
+                if (checkCollision(player, plat)) {
+                    if (player.vy > 0) { // Landing on top
+                        player.y = plat.y - player.height;
+                        player.vy = 0;
+                        player.grounded = true;
+                    } else if (player.vy < 0) { // Hitting from below
+                        player.y = plat.y + plat.h;
+                        player.vy = 0;
+                    }
+                }
+            });
+
+            // Question Blocks Collision (Hitting from bottom)
+            questionBlocks.forEach(block => {
+                if (!block.hit && checkCollision(player, block)) {
+                    if (player.vy < 0) {
+                        block.hit = true;
+                        player.vy = 2;
+                        triggerQuestion(block.questionIdx);
+                    }
+                }
+            });
+
+            // Coin Collection
+            coinsList.forEach(coin => {
+                if (!coin.collected) {
+                    const coinBox = { x: coin.x - 8, y: coin.y - 12, w: 16, h: 24 };
+                    if (checkCollision(player, coinBox)) {
+                        coin.collected = true;
+                        gameState.coins += 1;
+                        gameState.score += 50;
+                        sfx.coin();
+                        updateHUD();
+                    }
+                }
+            });
+
+            // Enemy Movements & Interactions
+            enemies.forEach(enemy => {
+                if (enemy.alive) {
+                    enemy.x += enemy.vx;
+                    if (enemy.x <= enemy.minX || enemy.x >= enemy.maxX) {
+                        enemy.vx *= -1;
+                    }
+
+                    // Check player collision with enemy
+                    if (checkCollision(player, enemy)) {
+                        // Stomp enemy
+                        if (player.vy > 0 && player.y + player.height - player.vy <= enemy.y + 10) {
+                            enemy.alive = false;
+                            player.vy = -7;
+                            gameState.score += 100;
+                            sfx.powerup();
+                            updateHUD();
+                        } else if (player.invulnerable <= 0) {
+                            // Player takes damage
+                            player.invulnerable = 60;
+                            gameState.lives--;
+                            sfx.wrong();
+                            updateHUD();
+
+                            if (gameState.lives <= 0) {
+                                alert("¡Game Over! Inténtalo de nuevo.");
+                                gameState.lives = 3;
+                                showScreen('map-screen');
+                            }
+                        }
+                    }
+                }
+            });
+
+            if (player.invulnerable > 0) player.invulnerable--;
+
+            // Fall into Pit
+            if (player.y > canvas.height + 50) {
+                gameState.lives--;
+                sfx.wrong();
+                updateHUD();
+                if (gameState.lives <= 0) {
+                    alert("¡Game Over!");
+                    gameState.lives = 3;
+                    showScreen('map-screen');
+                } else {
+                    player.x = 50;
+                    player.y = canvas.height - 150;
+                    player.vy = 0;
+                }
+            }
+
+            // Finish Pipe Goal Reached
+            if (checkCollision(player, finishPipe)) {
+                completeLevel();
+            }
+
+            // Smooth Camera Scroll Tracking Player
+            cameraX = Math.max(0, player.x - canvas.width / 3);
+        }
+
+        function checkCollision(rect1, rect2) {
+            const r1 = { x: rect1.x, y: rect1.y, w: rect1.width || rect1.w, h: rect1.height || rect1.h };
+            const r2 = { x: rect2.x, y: rect2.y, w: rect2.width || rect2.w, h: rect2.height || rect2.h };
+            return r1.x < r2.x + r2.w &&
+                   r1.x + r1.w > r2.x &&
+                   r1.y < r2.y + r2.h &&
+                   r1.y + r1.h > r2.y;
+        }
+
+        function completeLevel() {
+            stopGameLoop();
+            sfx.correct();
+
+            const current = gameState.currentWorld;
+            const starsEarned = Math.min(3, Math.max(1, questionsAnsweredInLevel + 1));
+            
+            if (starsEarned > (gameState.stars[current] || 0)) {
+                gameState.stars[current] = starsEarned;
+            }
+
+            if (current === gameState.unlockedWorlds && gameState.unlockedWorlds < WORLDS_DATA.length) {
+                gameState.unlockedWorlds++;
+            }
+
+            saveData();
+
+            document.getElementById('results-world-name').innerText = `MUNDO ${current}: ${WORLDS_DATA[current - 1].title}`;
+            document.getElementById('results-stars').innerText = '⭐'.repeat(starsEarned) + '☆'.repeat(3 - starsEarned);
+            document.getElementById('res-coins').innerText = gameState.coins;
+            document.getElementById('res-score').innerText = String(gameState.score).padStart(5, '0');
+
+            showScreen('results-screen');
+        }
+
+        function restartCurrentLevel() {
+            showScreen('game-screen');
+        }
+
+        function renderCanvas() {
+            ctx.save();
+            ctx.translate(-cameraX, 0);
+
+            // Draw Parallax Sky/Clouds Background NES style
+            ctx.fillStyle = '#5c94fc';
+            ctx.fillRect(cameraX, 0, canvas.width, canvas.height);
+
+            // Draw NES Style Pixel Clouds
+            for (let i = 0; i < 12; i++) {
+                let cx = (i * 300) - (cameraX * 0.2);
+                drawNESCloud(ctx, cx, 50);
+            }
+
+            // Draw NES Style Background Hills
+            for (let i = 0; i < 6; i++) {
+                let hx = (i * 600) - (cameraX * 0.4);
+                drawNESHill(ctx, hx, canvas.height - 40, 140, 60);
+                drawNESBush(ctx, hx + 320, canvas.height - 40);
+            }
+
+            // Draw Platforms (NES Ground & Bricks)
+            platforms.forEach(plat => {
+                if (plat.isBrick) {
+                    drawNESBricks(ctx, plat.x, plat.y, plat.w, plat.h);
+                } else {
+                    drawNESGround(ctx, plat.x, plat.y, plat.w, plat.h);
+                }
+            });
+
+            // Draw Question Blocks (?) NES Style
+            questionBlocks.forEach(block => {
+                if (block.hit) {
+                    ctx.fillStyle = '#c84c0c';
+                    ctx.fillRect(block.x, block.y, block.w, block.h);
+                    ctx.strokeStyle = '#000';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(block.x, block.y, block.w, block.h);
+                    ctx.fillStyle = '#000';
+                    ctx.fillRect(block.x + 4, block.y + 4, 4, 4);
+                } else {
+                    ctx.fillStyle = '#fc9838';
+                    ctx.fillRect(block.x, block.y, block.w, block.h);
+                    ctx.strokeStyle = '#000';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(block.x, block.y, block.w, block.h);
+
+                    ctx.fillStyle = '#000';
+                    ctx.font = 'bold 18px "Press Start 2P"';
+                    ctx.fillText('?', block.x + 9, block.y + 26);
+                    
+                    ctx.fillRect(block.x + 3, block.y + 3, 3, 3);
+                    ctx.fillRect(block.x + block.w - 6, block.y + 3, 3, 3);
+                    ctx.fillRect(block.x + 3, block.y + block.h - 6, 3, 3);
+                    ctx.fillRect(block.x + block.w - 6, block.y + block.h - 6, 3, 3);
+                }
+            });
+
+            // Draw Coins
+            coinsList.forEach(coin => {
+                if (!coin.collected) {
+                    ctx.fillStyle = '#fc9838';
+                    ctx.fillRect(coin.x - 6, coin.y - 10, 12, 20);
+                    ctx.strokeStyle = '#000';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(coin.x - 6, coin.y - 10, 12, 20);
+                    ctx.fillStyle = '#fff';
+                    ctx.fillRect(coin.x - 2, coin.y - 6, 4, 12);
+                }
+            });
+
+            // Draw Goomba Enemies (NES Mushroom Style)
+            enemies.forEach(enemy => {
+                if (enemy.alive) {
+                    drawNESGoomba(ctx, enemy.x, enemy.y);
+                }
+            });
+
+            // Draw End Pipe (NES Green Pipe)
+            drawNESPipe(ctx, finishPipe.x, finishPipe.y, finishPipe.w, finishPipe.h);
+
+            // Draw Hero Character (Mario-inspired NES Style)
+            if (player.invulnerable % 4 < 2) {
+                drawNESMario(ctx, player.x, player.y, player.facing);
+            }
+
+            ctx.restore();
+        }
+
+        /* --- RETRO NES GRAPHICS DRAWING HELPERS --- */
+        function drawNESCloud(ctx, x, y) {
+            ctx.fillStyle = '#ffffff';
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 2;
+
+            ctx.beginPath();
+            ctx.arc(x + 20, y + 20, 16, 0, Math.PI * 2);
+            ctx.arc(x + 40, y + 12, 20, 0, Math.PI * 2);
+            ctx.arc(x + 60, y + 20, 16, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Cloud eyes (classic Mario style)
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(x + 32, y + 14, 3, 8);
+            ctx.fillRect(x + 46, y + 14, 3, 8);
+        }
+
+        function drawNESHill(ctx, x, y, width, height) {
+            ctx.fillStyle = '#00a800';
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 3;
+
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.quadraticCurveTo(x + width / 2, y - height, x + width, y);
+            ctx.fill();
+            ctx.stroke();
+
+            // Black spots on hill
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(x + width / 2 - 4, y - height / 2, 6, 6);
+            ctx.fillRect(x + width / 3, y - height / 3, 5, 5);
+            ctx.fillRect(x + (width / 3) * 2, y - height / 3, 5, 5);
+        }
+
+        function drawNESBush(ctx, x, y) {
+            ctx.fillStyle = '#00a800';
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 2;
+
+            ctx.beginPath();
+            ctx.arc(x + 15, y - 10, 12, 0, Math.PI * 2);
+            ctx.arc(x + 30, y - 16, 16, 0, Math.PI * 2);
+            ctx.arc(x + 45, y - 10, 12, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+        }
+
+        function drawNESGround(ctx, x, y, w, h) {
+            ctx.fillStyle = '#c84c0c'; // NES Ground Brown
+            ctx.fillRect(x, y, w, h);
+            
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(x, y, w, h);
+
+            // Block Grid Pattern
+            const tileSize = 20;
+            for (let bx = x; bx < x + w; bx += tileSize) {
+                for (let by = y; by < y + h; by += tileSize) {
+                    ctx.strokeRect(bx, by, tileSize, tileSize);
+                    // Inner highlight line
+                    ctx.fillStyle = '#fc9838';
+                    ctx.fillRect(bx + 2, by + 2, tileSize - 4, 2);
+                }
+            }
+        }
+
+        function drawNESBricks(ctx, x, y, w, h) {
+            ctx.fillStyle = '#c84c0c';
+            ctx.fillRect(x, y, w, h);
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(x, y, w, h);
+
+            for (let by = y; by < y + h; by += 10) {
+                ctx.beginPath();
+                ctx.moveTo(x, by);
+                ctx.lineTo(x + w, by);
+                ctx.stroke();
+            }
+        }
+
+        function drawNESPipe(ctx, x, y, w, h) {
+            ctx.fillStyle = '#00a800';
+            ctx.fillRect(x, y, w, h);
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(x, y, w, h);
+
+            // Top Pipe Lip
+            ctx.fillRect(x - 4, y, w + 8, 22);
+            ctx.strokeRect(x - 4, y, w + 8, 22);
+
+            // Highlights
+            ctx.fillStyle = '#80d010';
+            ctx.fillRect(x + 4, y + 22, 6, h - 22);
+            ctx.fillRect(x, y + 2, 6, 18);
+        }
+
+        function drawNESGoomba(ctx, x, y) {
+            // Head/Body Mushroom shape
+            ctx.fillStyle = '#c84c0c';
+            ctx.beginPath();
+            ctx.arc(x + 15, y + 12, 14, Math.PI, 0, false);
+            ctx.fillRect(x + 2, y + 12, 26, 10);
+            ctx.fill();
+
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Eyes
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(x + 6, y + 8, 5, 8);
+            ctx.fillRect(x + 19, y + 8, 5, 8);
+            ctx.fillStyle = '#000';
+            ctx.fillRect(x + 8, y + 10, 3, 5);
+            ctx.fillRect(x + 19, y + 10, 3, 5);
+
+            // Feet
+            ctx.fillStyle = '#000';
+            ctx.fillRect(x + 2, y + 22, 10, 8);
+            ctx.fillRect(x + 18, y + 22, 10, 8);
+        }
+
+        function drawNESMario(ctx, x, y, facing) {
+            // Cap & Overalls Red/Brown Palette
+            ctx.fillStyle = '#e52521'; // Red Cap & Shirt
+            ctx.fillRect(x + 6, y, 20, 8); // Cap
+            ctx.fillRect(x + 4, y + 16, 24, 12); // Shirt
+
+            // Face Skin
+            ctx.fillStyle = '#fc9838';
+            ctx.fillRect(x + 6, y + 8, 20, 10);
+
+            // Overalls (Brown/Blue)
+            ctx.fillStyle = '#802000';
+            ctx.fillRect(x + 8, y + 28, 16, 16);
+
+            // Mustache & Eyes
+            ctx.fillStyle = '#000000';
+            const eyeOffset = facing === 'right' ? 18 : 8;
+            ctx.fillRect(x + eyeOffset, y + 10, 4, 4);
+            ctx.fillRect(x + 6, y + 14, 20, 4); // Mustache
+        }
+
+        function triggerQuestion(questionIdx) {
+            stopGameLoop();
+            sfx.powerup();
+
+            const modal = document.getElementById('question-modal');
+            const qData = levelQuestions[questionIdx] || levelQuestions[0];
+
+            document.getElementById('q-topic-tag').innerText = `MUNDO ${gameState.currentWorld}: ${WORLDS_DATA[gameState.currentWorld-1].title}`;
+            document.getElementById('q-text-content').innerText = qData.question;
+
+            const inputContainer = document.getElementById('q-input-container');
+            const feedbackBox = document.getElementById('q-feedback');
+            const submitBtn = document.getElementById('btn-submit-q');
+
+            inputContainer.innerHTML = '';
+            feedbackBox.className = 'feedback-box';
+            feedbackBox.style.display = 'none';
+            submitBtn.style.display = 'none';
+
+            activeQuestionIndex = questionIdx;
+
+            if (qData.type === 'choice') {
+                const grid = document.createElement('div');
+                grid.className = 'options-grid';
+
+                qData.options.forEach((opt, idx) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option-btn';
+                    btn.innerHTML = `<span style="color:var(--mario-yellow); font-weight:bold;">${String.fromCharCode(65 + idx)}.</span> ${opt}`;
+                    btn.onclick = () => checkMultipleChoice(idx, qData);
+                    grid.appendChild(btn);
+                });
+
+                inputContainer.appendChild(grid);
+            } else if (qData.type === 'order') {
+                let userOrder = [];
+
+                const targetBox = document.createElement('div');
+                targetBox.className = 'word-target';
+                targetBox.innerHTML = '<span style="color:#666; font-size:0.85rem; width:100%;">Toca las palabras para formar la oración:</span>';
+
+                const poolBox = document.createElement('div');
+                poolBox.className = 'word-pool';
+
+                // Shuffle words
+                const shuffled = [...qData.words].sort(() => Math.random() - 0.5);
+
+                function renderWordChips() {
+                    targetBox.innerHTML = '';
+                    if (userOrder.length === 0) {
+                        targetBox.innerHTML = '<span style="color:#666; font-size:0.85rem; width:100%;">Toca las palabras para formar la oración:</span>';
+                    } else {
+                        userOrder.forEach((w, i) => {
+                            const chip = document.createElement('div');
+                            chip.className = 'word-chip';
+                            chip.innerText = w;
+                            chip.onclick = () => {
+                                userOrder.splice(i, 1);
+                                renderWordChips();
+                            };
+                            targetBox.appendChild(chip);
+                        });
+                    }
+
+                    poolBox.innerHTML = '';
+                    shuffled.forEach((w) => {
+                        if (!userOrder.includes(w) || shuffled.filter(x => x === w).length > userOrder.filter(x => x === w).length) {
+                            const chip = document.createElement('div');
+                            chip.className = 'word-chip';
+                            chip.innerText = w;
+                            chip.onclick = () => {
+                                userOrder.push(w);
+                                renderWordChips();
+                            };
+                            poolBox.appendChild(chip);
+                        }
+                    });
+                }
+
+                renderWordChips();
+                inputContainer.appendChild(targetBox);
+                inputContainer.appendChild(poolBox);
+
+                submitBtn.style.display = 'block';
+                submitBtn.onclick = () => checkOrderChoice(userOrder, qData);
+            }
+
+            modal.style.display = 'flex';
+        }
+
+        function checkMultipleChoice(selectedIndex, qData) {
+            const feedbackBox = document.getElementById('q-feedback');
+            const isCorrect = selectedIndex === qData.correct;
+
+            processQuestionResult(isCorrect, qData.explanation);
+        }
+
+        function checkOrderChoice(userOrder, qData) {
+            const isCorrect = JSON.stringify(userOrder) === JSON.stringify(qData.correctOrder);
+            processQuestionResult(isCorrect, qData.explanation);
+        }
+
+        function processQuestionResult(isCorrect, explanation) {
+            const feedbackBox = document.getElementById('q-feedback');
+            const modal = document.getElementById('question-modal');
+
+            feedbackBox.style.display = 'block';
+            if (isCorrect) {
+                sfx.correct();
+                feedbackBox.className = 'feedback-box correct';
+                feedbackBox.innerHTML = `<strong>¡Excelente! Respuesta Correcta.</strong><br>${explanation}`;
+                gameState.score += 200;
+                gameState.coins += 5;
+                questionsAnsweredInLevel++;
+            } else {
+                sfx.wrong();
+                feedbackBox.className = 'feedback-box incorrect';
+                feedbackBox.innerHTML = `<strong>¡Incorrecto!</strong><br>${explanation}`;
+            }
+
+            updateHUD();
+
+            // Auto close modal after 2.5 seconds & resume platforming
+            setTimeout(() => {
+                modal.style.display = 'none';
+                startGameLoop();
+            }, 2600);
+        }
+
+        // --- CONTROLS & EVENT LISTENERS ---
+        window.addEventListener('keydown', e => { keys[e.code] = true; });
+        window.addEventListener('keyup', e => { keys[e.code] = false; });
+
+        // Touch Control Handlers for Mobile Devices
+        function bindTouchBtn(btnId, keyCode) {
+            const btn = document.getElementById(btnId);
+            if (!btn) return;
+            btn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                keys[keyCode] = true;
+            });
+            btn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                keys[keyCode] = false;
+            });
+        }
+
+        bindTouchBtn('btn-left', 'ArrowLeft');
+        bindTouchBtn('btn-right', 'ArrowRight');
+        bindTouchBtn('btn-jump', 'ArrowUp');
+
+        // INITIALIZE APPLICATION
+        window.onload = function() {
+            loadSaveData();
+            updateHUD();
+            showScreen('start-screen');
+        };
+    </script>
+</body>
+</html>
